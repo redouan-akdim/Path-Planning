@@ -1,6 +1,6 @@
 from prettytable import PrettyTable
 from utils import * 
-
+    
 class Node:
 
    def __init__(self, name):
