@@ -1,5 +1,5 @@
-from graph import Graph
-from queue import Queue
+from graph import Graph,Node
+from queue import LifoQueue
 
 romania = Graph( ['Or', 'Ne', 'Ze', 'Ia', 'Ar', 'Si', 'Fa',
  'Va', 'Ri', 'Ti', 'Lu', 'Pi', 'Ur', 'Hi',
@@ -19,28 +19,26 @@ romania = Graph( ['Or', 'Ne', 'Ze', 'Ia', 'Ar', 'Si', 'Fa',
    ('Hi', 'Ef', 86)
 ] )
 
+def depthFirstSearch(initialState:str,goalState:str):
+    myQueue = LifoQueue()   # Frontier as LIFO Queue
+    visited = []    # Visited nodes
 
-def breadthFirstSearch(initialState:str,goalState:str):
-    if (initialState == goalState): return [initialState]   # Finished, if initialstate is goalstate
-    
-    myQueue = Queue()   # Frontier as FIFO Queue
     for node in romania.nodes:
         if node.name == initialState:   # Find the start node in the graph
             node.parent = -1    # Declare node as root node
             myQueue.put(node)    # enqueue the initialstate to the queue
             break
 
-    visited = []    # Visited nodes
-
     # Expand the nodes from frontier
     while not myQueue.empty():    
         node = myQueue.get()    # Dequeue node from Queue (frontier)
-        if node in visited:
-            continue
 
         if node.name == goalState:      # Check if goalstate is reached
             visited.append(node)
             break
+
+        if node in visited:
+            continue
 
         for edge in node.edges:     # Traverse all edges going from the node
             if edge.start not in visited and edge.start != node:      # Check that node isn't visited and isn't the node himself
@@ -56,8 +54,9 @@ def breadthFirstSearch(initialState:str,goalState:str):
         visited.append(node)        # Mark node as vistied
 
     return visited
-             
-def printBFSPath(visited_list:list): 
+
+
+def printPath(visited_list:list): 
     """Prints the path and its costs from the given 'visited' list"""
     pathCost = 0
     node = visited_list[-1]     # Begin from last node
@@ -77,4 +76,4 @@ def printBFSPath(visited_list:list):
     print('Path cost:',pathCost)
 
 # Travelling from Bucharest to Timisoara
-printBFSPath(breadthFirstSearch('Bu','Ti'))
+printPath(depthFirstSearch('Bu','Ti'))
