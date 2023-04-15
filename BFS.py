@@ -24,40 +24,35 @@ def breadthFirstSearch(initialState:str,goalState:str):
     if (initialState == goalState): return [initialState]   # Finished, if initialstate is goalstate
     
     myQueue = Queue()   # Frontier as FIFO Queue
+    visited = []    # Visited nodes
+    
     for node in romania.nodes:
         if node.name == initialState:   # Find the start node in the graph
             node.parent = -1    # Declare node as root node
             myQueue.put(node)    # enqueue the initialstate to the queue
             break
 
-    visited = []    # Visited nodes
-
     # Expand the nodes from frontier
     while not myQueue.empty():    
         node = myQueue.get()    # Dequeue node from Queue (frontier)
-        if node in visited:
+
+        if node in visited:     # Skip the node if it has already been visited
             continue
 
         if node.name == goalState:      # Check if goalstate is reached
             visited.append(node)
             break
 
-        for edge in node.edges:     # Traverse all edges going from the node
-            if edge.start not in visited and edge.start != node:      # Check that node isn't visited and isn't the node himself
-                edge.start.parent = node
-                myQueue.put(edge.start)  # Enqueue child node to frontier
-
-            elif edge.end not in visited and edge.end != node:        # Check that node isn't visited and isn't the node himself
-                edge.end.parent = node
+        for edge in node.edges:     # Traverse all edges from the node
+            if edge.end not in visited:        # Check that node isn't visited
+                edge.end.parent = node  # Specify the parent node
                 myQueue.put(edge.end)   # Enqueue child node to frontier
-            
-            
-        
+             
         visited.append(node)        # Mark node as vistied
 
     return visited
              
-def printBFSPath(visited_list:list): 
+def printPath(visited_list:list): 
     """Prints the path and its costs from the given 'visited' list"""
     pathCost = 0
     node = visited_list[-1]     # Begin from last node
@@ -77,4 +72,4 @@ def printBFSPath(visited_list:list):
     print('Path cost:',pathCost)
 
 # Travelling from Bucharest to Timisoara
-printBFSPath(breadthFirstSearch('Bu','Ti'))
+printPath(breadthFirstSearch('Bu','Ti'))

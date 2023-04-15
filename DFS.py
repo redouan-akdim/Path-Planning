@@ -37,20 +37,14 @@ def depthFirstSearch(initialState:str,goalState:str):
             visited.append(node)
             break
 
-        if node in visited:
+        if node in visited:         # Skip the node if it has already been visited
             continue
 
-        for edge in node.edges:     # Traverse all edges going from the node
-            if edge.start not in visited and edge.start != node:      # Check that node isn't visited and isn't the node himself
-                edge.start.parent = node
-                myQueue.put(edge.start)  # Enqueue child node to frontier
-
-            elif edge.end not in visited and edge.end != node:        # Check that node isn't visited and isn't the node himself
-                edge.end.parent = node
+        for edge in node.edges:     # Traverse all edges from the node
+            if edge.end not in visited:        # Check that node isn't visited
+                edge.end.parent = node  # Specify the parent node
                 myQueue.put(edge.end)   # Enqueue child node to frontier
             
-            
-        
         visited.append(node)        # Mark node as vistied
 
     return visited
