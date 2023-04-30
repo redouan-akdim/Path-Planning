@@ -21,6 +21,7 @@ MARGIN = 3
 # --- 
 
 class Rectangle:
+     """ Defines a rectangle on the window """
      def __init__(self,row,col,width) -> None:
           self.row = row
           self.column = col
@@ -39,14 +40,20 @@ class Rectangle:
                          (MARGIN + HEIGHT) * self.x + MARGIN,WIDTH,HEIGHT])
           
      def initNeighbors(self,grid):
-          if self.row < 19 and grid[self.row + 1 ][self.column].color != BLACK:
+          """ Initialize the neighbors of the rectangels.
+              Don't take a barrier as neighbor.
+              total rows - 1 = total columns - 1 = 20 - 1 = 19
+          """
+          if self.row < 19 and grid[self.row + 1 ][self.column].color != BLACK:      # Bottom neighbor
                self.neighbors.append(grid[self.row +1 ][self.column])
-          if self.row > 0 and grid[self.row - 1 ][self.column].color != BLACK:
+          if self.row > 0 and grid[self.row - 1 ][self.column].color != BLACK:       # Top neighbor
                self.neighbors.append(grid[self.row - 1 ][self.column])
-          if self.column < 19 and grid[self.row][self.column + 1].color != BLACK:
+          if self.column < 19 and grid[self.row][self.column + 1].color != BLACK:    # Right neighbor
                self.neighbors.append(grid[self.row][self.column+1])
-          if self.column > 0 and grid[self.row][self.column-1].color != BLACK:
+          if self.column > 0 and grid[self.row][self.column-1].color != BLACK:       # Left neighbor
                self.neighbors.append(grid[self.row][self.column-1])
+
+
 # Store if the start and end rectangle is defined #
 isStartEnabled = False       
 isEndEnabled = False  
@@ -62,21 +69,17 @@ def reset(rectangle:Rectangle):
      rectangle.color = WHITE       # Set color to white (initial)
      
           
-     
+### Heuristic functions ###
+def euclideanDistance(point, other):
+      return math.sqrt((point.x-other.x)**2 + (point.y-other.y)**2)
 
-
-def euclideanDistance(pos, other):
-      pass
-
-def manhattanDistance(point,other):      # Heuristic function
+def manhattanDistance(point,other):      
       return abs(point.y-other.y) + abs(point.x-other.x)
 
-def makeGrid(rows,width):
-      grid = []
-      gap =0
-      pass
 
-def aStar(start:Rectangle,end:Rectangle):
+
+def aStar(start:Rectangle,end:Rectangle) -> list:
+    """ The A star algotihm"""
     count = 0
     
     open = PriorityQueue()   # Frontier as Priority Queue
@@ -97,7 +100,6 @@ def aStar(start:Rectangle,end:Rectangle):
          
         
          for neighbor in rectangle.neighbors:
-               print(count)
                if neighbor not in closed and neighbor not in [tup[2] for tup in open.queue]:
                    neighbor.g = float("inf")
                    open.put((count,neighbor.g,neighbor))
@@ -119,33 +121,15 @@ def aStar(start:Rectangle,end:Rectangle):
                rectangle.color = YELLOW
                count += 1
 
-    return closed
+    path = []       # Stores the final path
+    point = closed[-1]      # Begin from goal point -> BACKTRACKING
+    while point != 0:       # Backtrack until start point is reached
+          point.color = PURPLE
+          path.append(point)
+          point = point.parent
+
+    return path
          
-              
-         
-"""
-        for edge in node.edges:     # Traverse all edges from the node
-            otherNode = edge.end     # Other node of the edge
-
-            # Check that node isn't visited or in frontier and isn't the node himself
-            if otherNode not in visited and otherNode not in [tup[1] for tup in myQueue.queue]:
-                otherNode.parent = node     # Specify the parent node
-                otherNode.value = otherNode.parent.value + edge.value   # 
-                myQueue.put((otherNode.value,otherNode))   # Enqueue child node to frontier
-
-            # If node is in frontier, replace nodes...
-            elif otherNode not in visited and otherNode != node and otherNode in myQueue.queue:
-                i = 0   # counter variable to set the index
-                for _,node in myQueue.queue:
-                    if otherNode == node and otherNode.value < node.value:      #...if the actaul node has lower path-cost
-                        myQueue.queue[i] = otherNode
-                    i += 1
-            
-        visited.append(node)        # Mark node as vistied
-
-    return visited
-     """
-
 
 grid = []
 # Start and end point
@@ -222,53 +206,19 @@ while not done:
                if event.key == pygame.K_RETURN:
                     for row in grid:
                          for rectangle in row:
-                              rectangle.initNeighbors(grid)
+                              rectangle.initNeighbors(grid)      # Initialize the neighbors
                     
-                    path = aStar(start,end)
-                    print(len(path))
-                    lastEntry = path[len(path)-1]
-                    lastEntry.color = PURPLE
-                    while lastEntry.parent != 0 :
-                         lastEntry.color = PURPLE
-                         lastEntry = lastEntry.parent
-                    #print(len(aStar(start,end)))
-                    print("Test")
+                    path = aStar(start,end)       # Getting the search path from A*
+                    #print(len(path))
 
-          # ---
-          # The code here ist called once per clock tick
-          # Let your algorithm loop here
-          # ---
           screen.fill(BLACK)
 
-          # ---
-          # The screen is empty here
-          # Put your 'drawing' code here
-          #
-          #   RECTANGEL EXAMPLE
-          #
 
-          for row in grid:
-                for rectangle in row:
-                      rectangle.drawRect(screen)
+     for row in grid:
+               for rectangle in row:
+                    rectangle.drawRect(screen)       # Draw the rectangles
 
-          #for x in range(22):
-           #    grid.append([])
-            #   for y in range(22):
-             #       newRectangle = Rectangle(x,y,WIDTH)
-              #      grid[x].append(newRectangle)
-               #     newRectangle.drawRect(screen)
-                    #pygame.draw.rect(screen,WHITE,[(MARGIN + WIDTH) * y + MARGIN,
-                     #    (MARGIN + HEIGHT) * x + MARGIN,WIDTH,HEIGHT])
-          
-          pygame.display.update()
-                    #ra = Rectangle(i,j,WIDTH)
-                    #grid[i].append(ra)
-
-          #   The third Parameter defines the rectangles positioning etc: [y-pos,x-pos,width,height]
-          #pygame.draw.rect(screen,WHITE,[(MARGIN + WIDTH) * y + MARGIN,
-           #              (MARGIN + HEIGHT) * x + MARGIN,WIDTH,HEIGHT])
-          # ---
-
+     pygame.display.update()
 
 pygame.display.flip()
 
