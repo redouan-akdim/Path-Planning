@@ -23,7 +23,7 @@ romania = Graph( ['Or', 'Ne', 'Ze', 'Ia', 'Ar', 'Si', 'Fa',
 def uniformCostSearch(initialState:str,goalState:str):
     if (initialState == goalState): return [initialState]   # Finished, if initialstate is goalstate
     
-    myQueue = PriorityQueue()   # Frontier as FIFO Queue
+    myQueue = PriorityQueue()   # Frontier as Priority Queue
     visited = []    # Visited nodes
     
     for node in romania.nodes:
