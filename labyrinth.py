@@ -16,6 +16,22 @@ WIDTH = 22
 HEIGHT = 22
 MARGIN = 3
 
+pygame.init()
+
+size = (500, 500)        # Width and height of the window
+screen = pygame.display.set_mode(size)
+
+pygame.display.set_caption("My Game")
+
+done = False
+
+clock = pygame.time.Clock()
+
+grid = []
+# Start and end point
+start = None
+end = None    
+
 # ---
 # Initialize your classes etc.here
 # --- 
@@ -79,12 +95,12 @@ def manhattanDistance(point,other):
 
 
 def aStar(start:Rectangle,end:Rectangle) -> list:
-    """ The A star algotihm"""
-    count = 0
+    """ The A star algorithm """
+    count = 0       # count variable to allow comparsion of points with same g value
     
     open = PriorityQueue()   # Frontier as Priority Queue
     closed = []              # Visited rectangles
-    open.put((count,start.g,start))          # enqueue the start point to the queue
+    open.put((start.g,count,start))          # enqueue the start point to the queue
     start.color = RED
 
     while not open.empty():
@@ -95,67 +111,75 @@ def aStar(start:Rectangle,end:Rectangle) -> list:
               rectangle.color = YELLOW
               break
          
-         if rectangle in closed:        # Skip the point if it has already been visited
-              continue
+         #if rectangle in closed:        # Skip the point if it has already been visited
+          #    continue
          
         
          for neighbor in rectangle.neighbors:
                if neighbor not in closed and neighbor not in [tup[2] for tup in open.queue]:
                    neighbor.g = float("inf")
-                   open.put((count,neighbor.g,neighbor))
+                   open.put((neighbor.g,count,neighbor))
+                   neighbor.color = RED
+
 
                    
                if rectangle.g + 1 < neighbor.g:        # +1, because the neigbors are "1 step" away
                     tmp = neighbor.g
                     neighbor.g = rectangle.g + 1
-                    neighbor.f = neighbor.g + manhattanDistance(neighbor,end)
+                    neighbor.f = neighbor.g + euclideanDistance(neighbor,end)        # Calculate the f value (g(actual costs)+h(estimated costs))
                     neighbor.parent = rectangle
 
                     # Update rectangle if it is in frontier
                     if neighbor in [tup[2] for tup in open.queue]:     
-                         open.queue.remove((count,tmp,neighbor))
-                         open.put((count,neighbor.f,neighbor))
+                         open.queue.remove((tmp,count,neighbor))
+                         open.put((neighbor.f,count,neighbor))
                          neighbor.color = RED
-          
-               closed.append(rectangle)
-               rectangle.color = YELLOW
+               
                count += 1
+          
+         closed.append(rectangle)
+         rectangle.color = YELLOW
+
+         #rectangle.drawRect(screen)
+         
+
+         i = 0
+         for row in grid:
+               #print(len([(x.row,x.column) for x in row]))
+               for rectangle in row:
+                    i += 1
+                    rectangle.drawRect(screen)       # Draw the rectangles
+         pygame.time.delay(40)
+         pygame.display.update()
+
+
 
     path = []       # Stores the final path
     point = closed[-1]      # Begin from goal point -> BACKTRACKING
-    while point != 0:       # Backtrack until start point is reached
+    if point == end:         
+     while point != 0:       # Backtrack until start point is reached
           point.color = PURPLE
           path.append(point)
           point = point.parent
+    else:                          # No path is founf, if goal point isn't the last entry in the closed list
+          print("No path was found")
 
     return path
          
 
-grid = []
-# Start and end point
-start = None
-end = None     
+ 
 
-pygame.init()
 
-size = (500, 500)        # Width and height of the window
-screen = pygame.display.set_mode(size)
-
-pygame.display.set_caption("My Game")
-
-done = False
-
-clock = pygame.time.Clock()
-
-for x in range(size[0] // WIDTH+MARGIN):
+# Initialize the neighbors
+for x in range(20):
      grid.append([])
-     for y in range(size[0] // WIDTH+MARGIN):
+     for y in range(20):
           newRectangle = Rectangle(x,y,WIDTH)
           grid[x].append(newRectangle)
           newRectangle.drawRect(screen)
 
 
-
+isRunning = False     # Holds if the a star is running
 while not done:
      for event in pygame.event.get():
           if event.type == pygame.QUIT:      # If user clicks the exit button...    
@@ -163,7 +187,7 @@ while not done:
           
           
           
-          if pygame.mouse.get_pressed()[0]:       # On left click
+          if pygame.mouse.get_pressed()[0] and not isRunning:       # On left click
                y,x = pygame.mouse.get_pos()
                if x < 0 or x > size[0] or y < 0 or y > size[1]:
                     # If the mouse is outside the window, don't react
@@ -185,10 +209,9 @@ while not done:
                          isEndEnabled = True
                          end = addressedRectangle
                     else:
-                         print((y-MARGIN)//(MARGIN+WIDTH))
                          addressedRectangle.color = BLACK
 
-          if pygame.mouse.get_pressed()[2]:       # On right click
+          if pygame.mouse.get_pressed()[2] and not isRunning:       # On right click
                y,x = pygame.mouse.get_pos()
                if x < 0 or x > size[0] or y < 0 or y > size[1]:
                     # If the mouse is outside the window, don't react
@@ -203,20 +226,25 @@ while not done:
           
           if event.type == pygame.KEYDOWN:
                # Start A* algorithm, if enter key is pressed
-               if event.key == pygame.K_RETURN:
+               if event.key == pygame.K_RETURN and not isRunning:
+                    isRunning = True
                     for row in grid:
                          for rectangle in row:
                               rectangle.initNeighbors(grid)      # Initialize the neighbors
                     
-                    path = aStar(start,end)       # Getting the search path from A*
+                    path = aStar(start,end)       # Start the A* algorithm and get the search path from A*
+                    #isRunning  = False
                     #print(len(path))
 
           screen.fill(BLACK)
 
 
-     for row in grid:
-               for rectangle in row:
-                    rectangle.drawRect(screen)       # Draw the rectangles
+          for row in grid:
+                    for rectangle in row:
+                         rectangle.drawRect(screen)       # Draw the rectangles
+          
+          #if isRunning == True:
+           #    pygame.time.delay(500)
 
      pygame.display.update()
 
